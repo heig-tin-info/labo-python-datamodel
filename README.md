@@ -192,22 +192,192 @@ On sait que les objets en Python sont des instances de classes. On sait égaleme
 
 Il y a deux méthodes qui sont difficiles à comprendre c'est le `__init__()` et le `__new__()`. Le `__new__()` est une méthode statique qui est appelée avant le `__init__()` et qui est responsable de la création de l'objet.
 
+### `__new__`
+
 Dans un langage objet comme C++ ou Java on parle de *constructeur* pour désigner la méthode qui est appelée lors de la création d'un objet. En Python, le `__new__()` est le constructeur de la classe.
 
-Il est rare de devoir utiliser le `__new__()` dans une classe à moins de vouloir créer un objet immuable, par exemple, le `tuple`.
+Il est rare de devoir utiliser le `__new__()` dans une classe à moins d'avoir recours à des besoins très spécifiques.
+
+Un cas typique est le Singleton. Le Singleton est un patron de conception utilisé en génie logiciel. Il garantit qu'une classe n'a qu'une seule instance et fournit un point d'accès global à cette instance.
+
+Le Singleton est utilisé par exemple pour faire du logging, ou pour gérer des configurations globales d'un projet.
+
+L'exemple le plus courant est:
 
 ```python
-class MyImmutable
-    def __new__(cls, *args, **kwargs):
-        return super(MyImmutable, cls).__new__(cls)
+import logging
 
-    def __init__(self, a, b):
-        self.a = a
-        self.b = b
+logger = logging.getLogger(__name__)
+```
 
-    def __setattr__(self, name, value):
-        raise AttributeError("Can't set attribute")
+Ici on demande au module de logging de nous retourner un objet `Logger` qui est unique pour le module courant, c'est un Singleton.
 
-    def __delattr__(self, name):
-        raise AttributeError("Can't delete attribute")
+Voici l'exemple d'un Singleton qui est un compteur unique:
+
+```python
+class CounterSingleton:
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(CounterSingleton, cls).__new__(cls)
+            cls._instance.counter = 0
+        return cls._instance
+
+    def increment(self):
+        self.counter += 1
+
+    def __int__(self):
+        return self.counter
+
+    def value(self):
+        return self.counter
+```
+
+On peut utiliser ce Singleton de la manière suivante:
+
+```python
+s1 = CounterSingleton()
+s1.increment()
+a = s1.value() # a = 1
+
+s2 = CounterSingleton()
+s2.increment()
+b = s2.value() # b = 2
+
+def fonction():
+    s3 = CounterSingleton()
+    s3.increment()
+    return s3.value()
+
+c = fonction() # c = 3
+```
+
+Ici le `__new__` assigne l'instance à un attribut caché de classe `_instance`. Si l'instance n'existe pas, on crée une nouvelle instance de la classe `CounterSingleton` et on l'assigne à l'attribut `_instance`.
+
+Si l'on souhaite hériter d'une classe immuable comme `int`, on doit surcharger le `__new__()` et non le `__init__()`.
+
+```python
+class MyInt(int):
+    def __new__(cls, value):
+        return super(MyInt, cls).__new__(cls, value)
+
+    def __init__(self, value):
+        super(MyInt, self).__init__()
+        self.value = value
+
+    def add_answer_to_everything(self):
+        return self + 42
+
+i = MyInt(42)
+assert isinstance(i, int) == True
+```
+
+### `__repr__`
+Le `__repr__()` est une méthode spéciale qui permet de définir la représentation d'un objet lorsqu'on l'affiche dans la console. Cette méthode est pratique pour représenter facilement des objets spéciaux. Imaginons une matrice, on peut définir une méthode `__repr__()` pour afficher la matrice de manière lisible.
+
+```python
+class Matrix:
+    def __init__(self, matrix):
+        self.matrix = matrix
+
+    def __repr__(self):
+        return "\n".join([" ".join([str(x) for x in row]) for row in self.matrix])
+
+>>> u = [[1,2,3], [4,5,6], [7,8,9]]
+[[1, 2, 3], [4, 5, 6], [7, 8, 9]]  # Pas très joli
+
+>>> Matrix(u)
+1 2 3
+4 5 6
+7 8 9  ## Plus joli
+```
+
+### `__lt__`, `__le__`, `__eq__`, `__ne__`, `__gt__`, `__ge__`
+
+Ces méthodes spéciales permettent de définir le comportement des opérateurs de comparaison `<`, `<=`, `==`, `!=`, `>`, `>=`.
+
+Les opérateurs de comparaison sont parfois nécessaires dans des structures de données complexes comme les arbres binaires.
+
+Pour faire une recherche dichotomique dans une liste d'objet, ou trier cette liste, il est nécessaire de pouvoir les comparer.
+
+Par exemple définissons un objet qui contient la masse d'un objet et la vitesse à laquelle il se déplace. On peut définir que comparer ces objets revient à comparer l'énergie cinétique de ces objets.
+
+```python
+class Object:
+    def __init__(self, mass, velocity):
+        self.mass = mass
+        self.velocity = velocity
+
+u = [Object(1, 2), Object(2, 3), Object(3, 4)]
+```
+
+Si vous essayez de trier `u` avec `u.sort()` ou `sorted(u)`, vous obtiendrez une erreur `TypeError: '<' not supported between instances of 'Object' and 'Object'`. En effet, Python ne sait pas comment comparer deux objets de type `Object` et à besoin de la méthode `__lt__` pour le faire.
+
+```python
+class Object:
+    def __init__(self, mass, velocity):
+        self.mass = mass
+        self.velocity = velocity
+
+    def __lt__(self, other):
+        return 0.5 * self.mass * self.velocity ** 2 < 0.5 * other.mass * other.velocity ** 2
+```
+
+Maintenant vous pouvez trier `u` avec `u.sort()` ou `sorted(u)`. Mais le résultat sur la console n'est pas joli. Vous pouvez définir la méthode `__repr__` pour afficher les objets de manière lisible.
+
+```python
+>>> sorted(u)
+[<__main__.Object at 0x7f85a33ac2b0>,
+ <__main__.Object at 0x7f85a33ad480>,
+ <__main__.Object at 0x7f85a33af4f0>]
+```
+
+Essayez d'implémenter `__repr__` pour afficher les objets par exemple sous la forme `Object(m=1 kg, v=2 m/s, E=2 J)`.
+```
+
+### `__hash__`
+
+On a souvent parlé qu'un objet doit être immuable pour être haché. En effet, pour être utilisé comme clé dans un dictionnaire, un objet doit être haché. Pour cela, il doit implémenter la méthode `__hash__`.
+
+Par défaut un objet est haché par son adresse mémoire. Si vous avez deux objets identiques, ils auront deux adresses mémoires différentes et donc deux hachages différents et seront considérés comme deux objets différents.
+
+```python
+>>> u = {Object(1, 2) : 'a'}
+>>> u[Object(1, 2)]
+KeyError
+```
+
+Pour que deux objets soient considérés comme identiques, il faut que leur hachage soit identique. Pour cela, il faut surcharger la méthode `__hash__` et la méthode `__eq__`.
+
+```python
+class Object:
+    def __init__(self, mass, velocity):
+        self.mass = mass
+        self.velocity = velocity
+
+    def __hash__(self):
+        return hash((self.mass, self.velocity))
+
+    def __eq__(self, other):
+        return self.mass == other.mass and self.velocity == other.velocity
+```
+
+Maintenant vous pouvez utiliser `Object` comme clé dans un dictionnaire.
+
+Pour le fun, on va faire bugger le dictionnaire en modifiant la masse de l'objet après l'avoir utilisé comme clé dans le dictionnaire.
+
+```python
+>>> u = {Object(1, 2) : 'a'}
+>>> list(u.keys())[0].mass = 42
+>>> u
+KeyError
+```
+
+L'explication est que le dictionnaire s'attend à ce que les objets soient immuables et comment nous avons modifié la clé, le dictionnaire ne peut plus fonctionner correctement. Une solution serait d'interdir le changement des attributs en les cachants et en ajoutant un *getter* pour obtenir la masse et la vitesse.
+
+### `__getattr__` et `__getattribute__`
+
+Lorsque vous utilisez le `.` pour l'autocomplétion dans votre terminal REPL, vous demandez à Python d'appeler la méthode `__getattribute__`. On peut s'amuser à voir ce que Python ferait dans ce cas:
+
 ```
