@@ -1,12 +1,23 @@
 # Datamodel Python
 
+Très chers étudiants, bienvenue dans ce travail pratique qui clôture le cours de Python.
+
 Durant ce cours, nous avons vu les bases du langage Python, durant ces 16 semaines nous avons abordé l'écosystème de Python, ses modules, ses librairies, ses outils, ses bonnes pratiques, etc.
 
 Pour parfaire vos connaissances, je vous propose de vous plonger dans la documentation officielle de Python, qui est une mine d'or pour tout développeur Python.
 
-Le *Data model* est une partie de la documentation qui est très intéressante à lire. Elle n'est pas très digeste pour un débutant, mais adopter le reflexe de s'y référer est une bonne habitude à prendre.
+Le *Data model* est une partie de la documentation qui est très intéressante à lire. Elle n'est pas très digeste pour un profane, mais adopter le réflexe de s'y référer est une bonne habitude à prendre.
 
-Pour ce travail pratique, nous allons plonger dans le *Data model* de Python accessible [ici](https://docs.python.org/3/reference/datamodel.html).
+Pour ce travail pratique, nous allons nous plonger un peu dans le *Data model* de Python accessible [ici](https://docs.python.org/3/reference/datamodel.html) et dans la documentation de la librairie standard de Python accessible [ici](https://docs.python.org/3/library/index.html).
+
+## Déroulement du travail pratique
+
+Aujourd'hui rien à rendre, c'est un travail pratique pour vous. La mauvaise nouvelle c'est que vous avez un peu de lecture à faire. La bonne nouvelle c'est que vous allez apprendre plein de choses intéressantes.
+
+1. Parcourez ce `README.md`
+2. Testez les exemples par vous même dans un terminal Python, Ipython ou Jupyter.
+3. Essayez de comprendre pas vous même
+4. Pensez hors du cadre, tentez d'autres choses, improvisez, amusez-vous.
 
 ## Types particuliers
 
@@ -26,7 +37,7 @@ Quel est le type de `u` ?
 > [!TIP]
 > Pour afficher le type d'une variable, vous pouvez utiliser la fonction `type()`.
 
-Vous allez obtenir la valeur `NoneType` qui est la classe de l'objet `None`. Comme pour tous les objets Python, le type d'une classe, y-compris `NoneType`, est `type`
+Vous allez obtenir la valeur `NoneType` qui est la classe de l'objet `None`. Comme pour tous les objets Python, le type d'une classe, y compris `NoneType`, est `type`
 
 ```python
 >>> type(type(None))
@@ -117,7 +128,7 @@ Ceci nous amène à la notion de séquences immuables. Les séquences immuables 
 2. les tuples et
 3. les `frozenset`.
 
-Lorsque vous ajouter un caractère à une chaîne de caractères, Python crée une nouvelle chaîne de caractères. En voici la preuve :
+Lorsque vous ajoutez un caractère à une chaîne de caractères, Python crée une nouvelle chaîne de caractères. En voici la preuve :
 
 ```python
 >>> s = "hello"
@@ -136,7 +147,7 @@ Le système utilisé par Python pour gérer la mémoire est appelé *garbage col
 
 La fonction `sys.getrefcount()` permet de connaître le nombre de références d'un objet. Par exemple, si on exécute `sys.getrefcount(s)` après la réaffectation de `s`, on obtient 2. Cela signifie que `s` est référencé par deux variables. Notons que `sys.getrefcount()` renvoie toujours un nombre supérieur ou égal au nombre réel de références puisqu'il en crée une temporaire pour l'appel de la fonction.
 
-D'après vous quel est le nombre de référence à la variable `v` ?
+D'après vous quel est le nombre de références à la variable `v` ?
 
 ```python
 v = 1
@@ -146,7 +157,7 @@ u = [v, v, v, v, v]
 > [!TIP]
 > Pour afficher le nombre de références d'une variable, vous pouvez utiliser la fonction `sys.getrefcount()` et importer le module `sys`.
 
-Lorsque le nombre de référence sur un objet tombe à zéro, le garbage collector libère la mémoire de cet objet, c'est-à-dire qu'il le détruit. En C on utiliserait la fonction `free()` pour libérer la mémoire allouée à un objet.
+Lorsque le nombre de références sur un objet tombe à zéro, le garbage collector libère la mémoire de cet objet, c'est-à-dire qu'il le détruit. En C on utiliserait la fonction `free()` pour libérer la mémoire allouée à un objet.
 
 Ceci nous amène à penser que Python ne fonctionne qu'avec de l'allocation dynamique de mémoire. La plupart des objets sont alloués sur le `heap`, en C ce serait l'équivalent de l'allocation dynamique de mémoire avec `malloc()`.
 
@@ -161,7 +172,7 @@ def foo():
 assert callable(foo) == True
 ```
 
-Un objet appelable défini certains attributs spéciaux:
+Un objet appelable défini par certains attributs spéciaux:
 
 - `__call__()` : une méthode qui sera appelée lorsqu'on appelle l'objet.
 - `__defaults__` : les valeurs par défaut des arguments de la fonction.
@@ -182,7 +193,7 @@ On peut évidemment appeler la fonction `add` de la manière suivante:
 add.__call__(1, 2)
 ```
 
-N'oubliez pas que Python est un langage reflexif, c'est-à-dire qu'il permet de manipuler les objets comme des objets de première classe. C'est pour cela que l'on peut manipuler les fonctions comme des objets. On peut même obtenir le code source d'une fonction en utilisant la fonction `inspect.getsource()`.
+N'oubliez pas que Python est un langage réflexif, c'est-à-dire qu'il permet de manipuler les objets comme des objets de première classe. C'est pour cela que l'on peut manipuler les fonctions comme des objets. On peut même obtenir le code source d'une fonction en utilisant la fonction `inspect.getsource()`.
 
 Essayez de récupérer le code source de la fonction `add` en utilisant la fonction `inspect.getsource()`.
 
@@ -194,7 +205,7 @@ Il y a deux méthodes qui sont difficiles à comprendre c'est le `__init__()` et
 
 ### `__new__`
 
-Dans un langage objet comme C++ ou Java on parle de *constructeur* pour désigner la méthode qui est appelée lors de la création d'un objet. En Python, le `__new__()` est le constructeur de la classe.
+Dans un langage-objet comme C++ ou Java on parle de *constructeur* pour désigner la méthode qui est appelée lors de la création d'un objet. En Python, le `__new__()` est le constructeur de la classe.
 
 Il est rare de devoir utiliser le `__new__()` dans une classe à moins d'avoir recours à des besoins très spécifiques.
 
@@ -301,7 +312,7 @@ Les opérateurs de comparaison sont parfois nécessaires dans des structures de 
 
 Pour faire une recherche dichotomique dans une liste d'objet, ou trier cette liste, il est nécessaire de pouvoir les comparer.
 
-Par exemple définissons un objet qui contient la masse d'un objet et la vitesse à laquelle il se déplace. On peut définir que comparer ces objets revient à comparer l'énergie cinétique de ces objets.
+Par exemple, définissons un objet qui contient la masse d'un objet et la vitesse à laquelle il se déplace. On peut définir que comparer ces objets revient à comparer l'énergie cinétique de ces objets.
 
 ```python
 class Object:
